@@ -14,7 +14,7 @@ import org.joml.Vector2f;
 public class Camera extends Component {
     
     private float fovDegrees = 75.0f;
-    private final Vector2f viewBounds = new Vector2f(0.5f, 100.0f);
+    private final Vector2f viewBounds = new Vector2f(0.5f, 500.0f);
     private final Matrix4f projectionMatrix = new Matrix4f();
     private final Matrix4f tmpMatrix = new Matrix4f();
     

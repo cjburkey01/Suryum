@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -29,7 +30,7 @@ public class Window {
     private boolean shouldClose = false;
     private boolean vsync = false;
     
-    public Window(String title, int width, int height) {
+    public Window(String title, int width, int height, int multisample) {
         this.title = title;
         this.width = width;
         this.height = height;
@@ -49,6 +50,7 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, multisample);
         
         // Create window
         window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -67,6 +69,8 @@ public class Window {
         // Initialize OpenGL in window
         glfwMakeContextCurrent(window);
         GL.createCapabilities();
+        
+        glEnable(GL_MULTISAMPLE);
         
         // Enable the depth buffer
         glEnable(GL_DEPTH_TEST);

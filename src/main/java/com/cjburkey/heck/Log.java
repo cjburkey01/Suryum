@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
  * Created by CJ Burkey on 2018/11/25
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class Log {
+public final class Log {
     
     public static boolean debug = true;
     

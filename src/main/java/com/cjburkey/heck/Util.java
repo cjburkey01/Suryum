@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -12,15 +11,21 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
+import org.lwjgl.system.MemoryStack;
 
+import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * Created by CJ Burkey on 2018/11/25
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class Util {
+public final class Util {
     
     public static Optional<String> readResource(String name) {
         name = name.replaceAll(Pattern.quote("\""), "/").trim();
@@ -101,6 +106,89 @@ public class Util {
         for (float f : floats) buffer.put(f);
         buffer.flip();
         return buffer;
+    }
+    
+    public static float lerp(float start, float goal, float progress) {
+        return start + (goal - start) * progress;
+    }
+    
+    public static Vector2f lerp(Vector2fc start, Vector2fc goal, float progress) {
+        return new Vector2f(lerp(start.x(), goal.x(), progress),
+                lerp(start.y(), goal.y(), progress));
+    }
+    
+    public static Vector3f lerp(Vector3fc start, Vector3fc goal, float progress) {
+        return new Vector3f(lerp(start.x(), goal.x(), progress),
+                lerp(start.y(), goal.y(), progress),
+                lerp(start.z(), goal.z(), progress));
+    }
+    
+    public static Vector4f lerp(Vector4fc start, Vector4fc goal, float progress) {
+        return new Vector4f(lerp(start.x(), goal.x(), progress),
+                lerp(start.y(), goal.y(), progress),
+                lerp(start.z(), goal.z(), progress),
+                lerp(start.w(), goal.w(), progress));
+    }
+    
+    public static float dampSpringCrit(float target, float current, float[] velocity, float springConstant, float timestep) {
+        if (velocity.length != 1) return Float.NaN;
+        
+        float currentToTarget = target - current;
+        float springForce = currentToTarget * springConstant;
+        float dampingForce = -velocity[0] * 2 * (float) Math.sqrt(springConstant);
+        float force = springForce + dampingForce;
+        velocity[0] += force * timestep;
+        float displacement = velocity[0] * timestep;
+        return current + displacement;
+    }
+    
+    public static float dampSpringCrit(float target, float current, FloatBuffer velocity, float springConstant, float timestep) {
+        float vel = velocity.get(0);
+        float currentToTarget = target - current;
+        float springForce = currentToTarget * springConstant;
+        float dampingForce = -vel * 2 * (float) Math.sqrt(springConstant);
+        float force = springForce + dampingForce;
+        velocity.put(0, vel + force * timestep);
+        float displacement = velocity.get(0) * timestep;
+        return current + displacement;
+    }
+    
+    public static Vector2f dampSpringCrit(Vector2fc target, Vector2fc current, Vector2f velocity, float springConstant, float timestep) {
+        float valueX;
+        float valueY;
+        try (MemoryStack stack = stackPush()) {
+            FloatBuffer xVelocity = stack.mallocFloat(1);
+            FloatBuffer yVelocity = stack.mallocFloat(1);
+            xVelocity.put(velocity.x);
+            yVelocity.put(velocity.y);
+            
+            valueX = dampSpringCrit(target.x(), current.x(), xVelocity, springConstant, timestep);
+            valueY = dampSpringCrit(target.y(), current.y(), yVelocity, springConstant, timestep);
+            
+            velocity.set(xVelocity.get(0), yVelocity.get(0));
+        }
+        return new Vector2f(valueX, valueY);
+    }
+    
+    public static Vector3f dampSpringCrit(Vector3fc target, Vector3fc current, Vector3f velocity, float springConstant, float timestep) {
+        float valueX;
+        float valueY;
+        float valueZ;
+        try (MemoryStack stack = stackPush()) {
+            FloatBuffer xVelocity = stack.mallocFloat(1);
+            FloatBuffer yVelocity = stack.mallocFloat(1);
+            FloatBuffer zVelocity = stack.mallocFloat(1);
+            xVelocity.put(velocity.x);
+            yVelocity.put(velocity.y);
+            zVelocity.put(velocity.z);
+            
+            valueX = dampSpringCrit(target.x(), current.x(), xVelocity, springConstant, timestep);
+            valueY = dampSpringCrit(target.y(), current.y(), yVelocity, springConstant, timestep);
+            valueZ = dampSpringCrit(target.z(), current.z(), zVelocity, springConstant, timestep);
+            
+            velocity.set(xVelocity.get(0), yVelocity.get(0), zVelocity.get(0));
+        }
+        return new Vector3f(valueX, valueY, valueZ);
     }
     
 }

@@ -4,9 +4,10 @@ import com.cjburkey.heck.ecs.GameObject;
 import com.cjburkey.heck.ecs.ISceneHandler;
 import com.cjburkey.heck.ecs.Scene;
 import com.cjburkey.heck.ecs.components.Camera;
-import com.cjburkey.heck.game.KeyboardMove;
-import com.cjburkey.heck.game.MouseMove;
-import com.cjburkey.heck.game.MouseZoom;
+import com.cjburkey.heck.ecs.components.SmoothMove;
+import com.cjburkey.heck.game.camera.KeyboardMove;
+import com.cjburkey.heck.game.camera.MouseMove;
+import com.cjburkey.heck.game.camera.MouseZoom;
 import com.cjburkey.heck.glfw.Window;
 import com.cjburkey.heck.material.BasicMaterial;
 import com.cjburkey.heck.material.BasicShader;
@@ -31,7 +32,6 @@ public class Heck implements ISceneHandler {
     
     private static Window window;
     private static BasicShader shader;
-    private static final GameLoopTimer gameLoopTimer = new GameLoopTimer();
     
     public static void main(String[] args) {
         if (!mainRun) Thread.setDefaultUncaughtExceptionHandler((t, e) -> Log.exception(e));
@@ -48,7 +48,7 @@ public class Heck implements ISceneHandler {
     }
     
     private void createWindow() {
-        window = new Window("Heck 0.0.1", 300, 300);
+        window = new Window("Heck 0.0.1", 300, 300, 4);
         window.setHalfMonitorSize();
         window.setCenter();
         window.setVsync(true);
@@ -64,15 +64,11 @@ public class Heck implements ISceneHandler {
         GameObject cameraObj = createCamera();
         cameraObj.transform.rotation.rotateX((float) Math.PI / -2.0f);
         cameraObj.transform.position.y += 5.0f;
-//        cameraObj.transform.position.z += 12.0f;
         
         initTestObj();
         
         running = true;
         while (running) {
-            // Update delta time
-            gameLoopTimer.update();
-            
             // Get input data and update game
             window.prepareUpdate();
             Time.update();
@@ -100,10 +96,11 @@ public class Heck implements ISceneHandler {
     
     private GameObject createCamera() {
         GameObject cameraObj = currentScene.instantiate();
-        cameraObj.addComponent(new Camera());
         cameraObj.addComponent(new MouseMove());
         cameraObj.addComponent(new KeyboardMove());
         cameraObj.addComponent(new MouseZoom());
+        cameraObj.addComponent(new SmoothMove());
+        cameraObj.addComponent(new Camera());
         return cameraObj;
     }
     
@@ -123,11 +120,12 @@ public class Heck implements ISceneHandler {
                 0, 2, 3,
         });
         GameObject test1 = currentScene.instantiate();
-//        GameObject test2 = currentScene.instantiate();
+        GameObject test2 = currentScene.instantiate();
         test1.transform.rotation.rotateX((float) Math.PI / -2.0f);
-//        test2.transform.position.x += 10.0f;
+        test2.transform.rotation.rotateX((float) Math.PI / -1.5f).rotateZ((float) Math.PI / 2.5f);
+        test2.transform.position.x += 10.0f;
         mesh.createRenderer(test1);
-//        mesh.createRenderer(test2);
+        mesh.createRenderer(test2);
     }
     
     private void update() {
@@ -152,10 +150,6 @@ public class Heck implements ISceneHandler {
     
     public BasicShader getShader() {
         return shader;
-    }
-    
-    public float getUpdateDelta() {
-        return (float) gameLoopTimer.getUpdateDelta();
     }
     
 }

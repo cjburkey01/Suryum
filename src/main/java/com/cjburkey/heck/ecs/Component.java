@@ -25,6 +25,7 @@ public abstract class Component {
     protected void onDeactivated() { }
     protected void onAdd() { }
     protected void onAdded() { }
+    protected void onAdded(Component other) { }
     protected void onRemove() { }
     protected void onRemoved() { }
     

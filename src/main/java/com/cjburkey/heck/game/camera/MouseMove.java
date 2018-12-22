@@ -1,11 +1,11 @@
-package com.cjburkey.heck.game;
+package com.cjburkey.heck.game.camera;
 
 import com.cjburkey.heck.ecs.Component;
+import com.cjburkey.heck.ecs.components.SmoothMove;
 import com.cjburkey.heck.glfw.Input;
 import com.cjburkey.heck.math.Plane;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import lombok.Getter;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -29,10 +29,16 @@ public class MouseMove extends Component {
     private final Vector3f cursorWorldPos = new Vector3f();
     private final Vector3f prevCursorWorldPos = new Vector3f();
     private final Vector3f deltaPosition = new Vector3f();
-    private final Matrix4f tmpMatrix = new Matrix4f();
+    private SmoothMove smoothMove;
     
     public MouseMove() {
         activatingMouseButtons.add(GLFW_MOUSE_BUTTON_MIDDLE);
+    }
+    
+    protected void onAdded(Component component) {
+        if (component instanceof SmoothMove) {
+            smoothMove = (SmoothMove) component;
+        }
     }
     
     protected void onUpdate() {
@@ -40,21 +46,21 @@ public class MouseMove extends Component {
         
         if (!lock && Input.getAnyMousePressed(activatingMouseButtons)) {
             // Get current cursor position in the world
-            Vector3fc pos = screenToPlane(mainCamera(), cursorPos, plane, tmpMatrix);
+            Vector3fc pos = screenToPlane(mainCamera(), cursorPos, plane);
             if (pos == null) {
                 return;
             }
             cursorWorldPos.set(pos);
             
             // Get previous cursor position in the world
-            pos = screenToPlane(mainCamera(), prevCursorPos, plane, tmpMatrix);
+            pos = screenToPlane(mainCamera(), prevCursorPos, plane);
             if (pos == null) {
                 pos = new Vector3f(getTransform().position);
             }
             prevCursorWorldPos.set(pos);
             
             // Move the camera the distance between the previous and current world points
-            getTransform().position.sub(cursorWorldPos.sub(prevCursorWorldPos, deltaPosition));
+            smoothMove.goalPosition.sub(cursorWorldPos.sub(prevCursorWorldPos, deltaPosition));
         }
         
         prevCursorPos.set(cursorPos);

@@ -2,7 +2,6 @@ package com.cjburkey.heck.ecs.components;
 
 import com.cjburkey.heck.Transformation;
 import com.cjburkey.heck.ecs.Component;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
@@ -18,8 +17,6 @@ public class Transform extends Component {
     public final Vector3f position = new Vector3f();
     public final Quaternionf rotation = new Quaternionf();
     public final Vector3f scale = new Vector3f(1.0f);
-    
-    private final Matrix4f tmpMat4 = new Matrix4f();
     
     public Transform() { }
     
@@ -38,11 +35,23 @@ public class Transform extends Component {
     }
     
     public Vector3fc transformPoint(Vector3fc point) {
-        return Transformation.transformPoint(rotation, point, tmpMat4);
+        return Transformation.transformPoint(rotation, point);
     }
     
     public Vector3fc transformDir(Vector3fc dir) {
-        return Transformation.transformDir(rotation, dir, tmpMat4);
+        return Transformation.transformDir(rotation, dir);
+    }
+    
+    public Vector3fc right() {
+        return Transformation.transformDir(rotation, new Vector3f(1.0f, 0.0f, 0.0f));
+    }
+    
+    public Vector3fc up() {
+        return Transformation.transformDir(rotation, new Vector3f(0.0f, 1.0f, 0.0f));
+    }
+    
+    public Vector3fc forward() {
+        return Transformation.transformDir(rotation, new Vector3f(0.0f, 0.0f, -1.0f));
     }
     
 }

@@ -24,8 +24,6 @@ public final class Transformation {
     private static final Matrix4f viewMatrix = new Matrix4f();
     private static final Matrix4f modelMatrix = new Matrix4f();
     private static final Matrix4f finalMatrix = new Matrix4f();
-    private static final Vector3f tmpVec3 = new Vector3f();
-    private static final Vector4f tmpVec4 = new Vector4f();
     
     public static Matrix4fc getProjectionMatrix(float fovDeg, float aspect, float near, float far) {
         return projectionMatrix
@@ -56,51 +54,55 @@ public final class Transformation {
         return projectionViewMatrix.mul(modelMatrix, finalMatrix);
     }
     
-    public static Vector3fc transformPoint(Quaternionfc rotation, Vector3fc point, Matrix4f tmpMatrix) {
-        return transformMatPoint(rotation.get(tmpMatrix), point, tmpMatrix);
+    public static Vector3fc transformPoint(Quaternionfc rotation, Vector3fc point) {
+        return transformMatPoint(rotation.get(new Matrix4f()), point);
     }
     
-    public static Vector3fc transformDir(Quaternionfc rotation, Vector3fc direction, Matrix4f tmpMatrix) {
-        return transformMatDirection(rotation.get(tmpMatrix), direction, tmpMatrix);
+    public static Vector3fc transformDir(Quaternionfc rotation, Vector3fc direction) {
+        return transformMatDirection(rotation.get(new Matrix4f()), direction);
     }
     
-    public static Vector3fc transformMatPoint(Matrix4fc mat, Vector3fc point, Matrix4f tmpMatrix) {
+    public static Vector3fc transformMatPoint(Matrix4fc mat, Vector3fc point) {
         return mat
-                .invert(tmpMatrix)
+                //.invert(new Matrix4f())
                 .transformPosition(point, new Vector3f());
     }
     
-    public static Vector3fc transformMatDirection(Matrix4fc mat, Vector3fc direction, Matrix4f tmpMatrix) {
+    public static Vector3fc transformMatDirection(Matrix4fc mat, Vector3fc direction) {
         return mat
-                .invert(tmpMatrix)
+                //.invert(new Matrix4f())
                 .transformDirection(direction, new Vector3f());
     }
     
     // TODO: TEST THESE TO SEE IF THEY WORK
     
-    public static Vector3fc screenToGlPos(Vector2fc screenCoords) {
+    public static Vector3f screenToGlPos(Vector2fc screenCoords) {
         Window w = Heck.instance.getWindow();
-        return tmpVec3.set(screenCoords.x() / w.getWidth() * 2.0f - 1.0f, 1.0f - screenCoords.y() / w.getHeight() * 2.0f, 0.0f);
+        return new Vector3f(screenCoords.x() / w.getWidth() * 2.0f - 1.0f, 1.0f - screenCoords.y() / w.getHeight() * 2.0f, 0.0f);
     }
     
-    public static Vector3fc glPosToWorldRay(Camera camera, Vector3fc glScreenPos, Matrix4f tmpMatrix) {
+    public static Vector3f glPosToWorldRay(Camera camera, Vector3fc glScreenPos) {
         // We need to enter homogeneous coordinates, so w is set to 1.
-        tmpVec4.set(glScreenPos.x(), glScreenPos.y(), -1.0f, 1.0f);
+        Vector4f ray = new Vector4f(glScreenPos.x(), glScreenPos.y(), -1.0f, 1.0f);
         camera.getProjectionMatrix()
-                .invert(tmpMatrix)
-                .transform(tmpVec4);
+                .invert(new Matrix4f())
+                .transform(ray);
         
         // We are working with a vector, so the w component can be set to 0
-        tmpVec4.z = -1.0f;
-        tmpVec4.w = 0.0f;
+        ray.z = -1.0f;
+        ray.w = 0.0f;
         camera.getTransform().getViewMatrix()
-                .invert(tmpMatrix)
-                .transform(tmpVec4);
-        return new Vector3f(tmpVec4.x, tmpVec4.y, tmpVec4.z).normalize();
+                .invert(new Matrix4f())
+                .transform(ray);
+        return new Vector3f(ray.x, ray.y, ray.z).normalize();
     }
     
-    public static Vector3fc screenToPlane(Camera camera, Vector2fc screenCoords, Plane plane, Matrix4f tmpMatrix) {
-        return plane.getIntersectionPoint(camera.getTransform().position, glPosToWorldRay(camera, screenToGlPos(screenCoords), tmpMatrix));
+    public static Vector3f screenToWorldRay(Camera camera, Vector2fc screenCoords) {
+        return glPosToWorldRay(camera, screenToGlPos(screenCoords));
+    }
+    
+    public static Vector3f screenToPlane(Camera camera, Vector2fc screenCoords, Plane plane) {
+        return plane.getIntersectionPoint(camera.getTransform().position, screenToWorldRay(camera, screenCoords));
     }
     
 }

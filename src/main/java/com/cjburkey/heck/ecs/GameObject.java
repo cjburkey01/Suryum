@@ -1,12 +1,10 @@
 package com.cjburkey.heck.ecs;
 
-import com.cjburkey.heck.Log;
 import com.cjburkey.heck.ecs.components.Camera;
 import com.cjburkey.heck.ecs.components.Transform;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Optional;
@@ -17,9 +15,9 @@ import lombok.EqualsAndHashCode;
 /**
  * Created by CJ Burkey on 2018/12/08
  */
-@SuppressWarnings({"WeakerAccess", "UnusedReturnValue"})
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class GameObject {
+public final class GameObject {
     
     private Camera camera;
     
@@ -32,7 +30,7 @@ public class GameObject {
     
     private final ObjectArrayFIFOQueue<Component> componentsToAdd = new ObjectArrayFIFOQueue<>();
     private final ObjectOpenHashSet<Class<? extends Component>> componentsToRem = new ObjectOpenHashSet<>();
-    private final Object2ObjectLinkedOpenHashMap<Class<? extends Component>, Component> components = new Object2ObjectLinkedOpenHashMap<>();
+    private final Object2ObjectArrayMap<Class<? extends Component>, Component> components = new Object2ObjectArrayMap<>();
     
     GameObject(@NotNull Scene scene, @Nullable Transform transform) {
         this.scene = scene;
@@ -99,6 +97,7 @@ public class GameObject {
             Component component = componentsToAdd.dequeue();
             components.put(component.getClass(), component);
             component.onAdded();
+            forEach(component1 -> component1.onAdded(component));
         }
     }
     

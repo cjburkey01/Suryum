@@ -10,7 +10,7 @@ import lombok.Getter;
  * Created by CJ Burkey on 2018/12/08
  */
 @SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
-public class Scene {
+public final class Scene {
     
     private final ObjectOpenHashSet<GameObject> objectsToAdd = new ObjectOpenHashSet<>();
     private final ObjectOpenHashSet<GameObject> objectsToRem = new ObjectOpenHashSet<>();

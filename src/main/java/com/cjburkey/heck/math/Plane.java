@@ -24,11 +24,11 @@ public class Plane {
         this.normal.set(normal);
     }
     
-    public Vector3fc getIntersectionPoint(Ray ray) {
+    public Vector3f getIntersectionPoint(Ray ray) {
         return getIntersectionPoint(ray.origin, ray.vector);
     }
     
-    public Vector3fc getIntersectionPoint(Vector3fc rayOrigin, Vector3fc rayDir) {
+    public Vector3f getIntersectionPoint(Vector3fc rayOrigin, Vector3fc rayDir) {
         float rDotn = rayDir.dot(normal);
         
         // If the plane is parallel to the ray, there is no point of intersection
@@ -37,7 +37,7 @@ public class Plane {
         }
         
         float dp = normal.dot(center.sub(rayOrigin, tmp)) / rDotn;
-        return rayOrigin.add(rayDir.mul(dp, tmp), tmp);
+        return rayOrigin.add(rayDir.mul(dp, tmp), new Vector3f());
     }
     
 }
